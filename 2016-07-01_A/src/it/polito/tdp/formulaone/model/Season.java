@@ -30,7 +30,9 @@ public class Season {
 
 	@Override
 	public String toString() {
-		return "Season[" + year + "]";
+		return ""+year;
 	}
+	
+	
 
 }

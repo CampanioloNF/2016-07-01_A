@@ -4,12 +4,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultWeightedEdge;
 
 import it.polito.tdp.formulaone.model.Circuit;
 import it.polito.tdp.formulaone.model.Constructor;
+import it.polito.tdp.formulaone.model.Driver;
 import it.polito.tdp.formulaone.model.Season;
 
 
@@ -110,6 +116,51 @@ public class FormulaOneDAO {
 			e.printStackTrace();
 			throw new RuntimeException("SQL Query Error");
 		}
+	}
+
+	public void loadAllDriversSeason(Map<Integer, Driver> idDriverMap, Graph<Driver, DefaultWeightedEdge> grafo,
+			Year year) {
+		
+		String sql = "SELECT d.driverId, d.driverRef, d.NUMBER, d.CODE, d.forename, d.surname, d.dob, d.nationality, d.url " + 
+				"FROM results re, races ra, drivers d " + 
+				"WHERE re.raceId = ra.raceId AND d.driverId = re.driverId AND ra.YEAR = ? AND re.POSITION IS NOT null " + 
+				"GROUP BY re.driverId ";
+		
+		try {
+			Connection conn = ConnectDB.getConnection();
+
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1,Integer.parseInt(year.toString()) );
+
+			ResultSet rs = st.executeQuery();
+
+			
+			while (rs.next()) {
+				
+				
+				
+				if(!idDriverMap.containsKey(rs.getInt(""))) {
+					
+					
+						
+						
+						Driver driver =  new Driver(rs.getInt("d.driverId"), rs.getString("d.driverRef"), rs.getInt("d.NUMBER"), rs.getString("d.CODE"), rs.getString("d.forename"), 
+								rs.getString("d.surname"), rs.getDate("d.dob").toLocalDate(), rs.getString("d.nationality"), rs.getString("d.url"));
+						
+						idDriverMap.put(driver.getDriverId(), driver);
+					
+					
+				}
+				
+			}
+
+			conn.close();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("SQL Query Error");
+		}
+		
 	}
 	
 }
