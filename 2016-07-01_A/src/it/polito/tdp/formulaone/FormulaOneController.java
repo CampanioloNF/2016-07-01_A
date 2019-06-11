@@ -1,9 +1,9 @@
 package it.polito.tdp.formulaone;
 
 import java.net.URL;
-import java.time.Year;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.formulaone.model.Driver;
 import it.polito.tdp.formulaone.model.Model;
 import it.polito.tdp.formulaone.model.Season;
 import javafx.event.ActionEvent;
@@ -31,16 +31,17 @@ public class FormulaOneController {
     @FXML
     private TextArea txtResult;
 
+    private Season anno = null; 
     @FXML
     void doCreaGrafo(ActionEvent event) {
     	
-    	
-    	Season anno = boxAnno.getValue();
+    	txtResult.clear();
+    	anno = boxAnno.getValue();
     	
     	if(anno!=null) {
     		
     		model.creaGrafo(anno);
-    		
+    		txtResult.appendText("Il pilota migliore è  : " +model.getBestDriver());
     	}
     	else {
     		txtResult.appendText("Seleziona una season");
@@ -51,6 +52,34 @@ public class FormulaOneController {
     @FXML
     void doTrovaDreamTeam(ActionEvent event) {
 
+
+    	txtResult.clear();
+    	
+    	
+    	if(anno==boxAnno.getValue()) {
+    		
+    		try {
+    		
+    		txtResult.appendText("Dream team\n\n");
+    		
+    		for(Driver dri : model.dreamTeam(Integer.parseInt(this.textInputK.getText()))) 
+    			txtResult.appendText("  - "+dri.toString()+"\n");
+    		
+    		}catch(NumberFormatException nfe) {
+    			txtResult.appendText("Si prega di inserire un numero intero K");
+    		}
+    			
+    	}
+    	else {
+    		
+    		if(anno==null) 
+    			txtResult.appendText("Seleziona una season");
+    		
+    		else
+    	    	txtResult.appendText("Se vuoi cambiare season premi su 'Vittorie piloti' ");
+    	}
+
+    	
     }
 
     @FXML

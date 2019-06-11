@@ -4,13 +4,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.jgrapht.Graph;
+import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultWeightedEdge;
 
 import it.polito.tdp.formulaone.model.Circuit;
@@ -130,26 +130,21 @@ public class FormulaOneDAO {
 			Connection conn = ConnectDB.getConnection();
 
 			PreparedStatement st = conn.prepareStatement(sql);
-			st.setInt(1,Integer.parseInt(year.toString()) );
+			st.setInt(1, year.getValue());
 
 			ResultSet rs = st.executeQuery();
 
 			
 			while (rs.next()) {
 				
-				
-				
-				if(!idDriverMap.containsKey(rs.getInt(""))) {
+				if(!idDriverMap.containsKey(rs.getInt("d.driverId"))) {
 					
-					
-						
-						
 						Driver driver =  new Driver(rs.getInt("d.driverId"), rs.getString("d.driverRef"), rs.getInt("d.NUMBER"), rs.getString("d.CODE"), rs.getString("d.forename"), 
 								rs.getString("d.surname"), rs.getDate("d.dob").toLocalDate(), rs.getString("d.nationality"), rs.getString("d.url"));
-						
+						//riempio la mappa
 						idDriverMap.put(driver.getDriverId(), driver);
-					
-					
+						//aggiungo il vertice
+						grafo.addVertex(driver);
 				}
 				
 			}
@@ -161,6 +156,41 @@ public class FormulaOneDAO {
 			throw new RuntimeException("SQL Query Error");
 		}
 		
+	}
+
+	public void loadAllEdges(Map<Integer, Driver> idDriverMap, Graph<Driver, DefaultWeightedEdge> grafo, Year year) {
+		
+		String sql = "SELECT re1.driverId AS id1, re2.driverId AS id2, SUM(case when re1.position > re2.position then 1 ELSE 0 END) AS peso " + 
+				"FROM results  re1, results re2, races ra " + 
+				"WHERE ra.YEAR = ? AND re1.raceId = ra.raceId and re2.raceId = ra.raceId " + 
+				"and re1.POSITION IS NOT NULL and re2.POSITION IS NOT NULL " + 
+				"AND not re2.driverId = re1.driverId  " + 
+				"GROUP BY re1.driverId, re2.driverId " + 
+				"HAVING peso>0 ";
+		
+		try {
+			Connection conn = ConnectDB.getConnection();
+
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, year.getValue());
+
+			ResultSet rs = st.executeQuery();
+
+			
+			while (rs.next()) {
+				
+				if(idDriverMap.containsKey(rs.getInt("id1")) && idDriverMap.containsKey(rs.getInt("id1"))) 
+					    Graphs.addEdge(grafo, idDriverMap.get(rs.getInt("id1")), idDriverMap.get(rs.getInt("id2")), rs.getInt("peso"));
+				
+				
+			}
+
+			conn.close();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("SQL Query Error");
+		}
 	}
 	
 }
