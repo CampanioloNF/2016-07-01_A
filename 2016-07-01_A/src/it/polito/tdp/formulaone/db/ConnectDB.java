@@ -10,7 +10,7 @@ public class ConnectDB {
 
 	private static final String jdbcURL = "jdbc:mysql://localhost/formula1?serverTimezone=Europe/Rome";
 	private static HikariDataSource ds;
-	
+	 
 	public static Connection getConnection() {
 		
 		if (ds == null) {
